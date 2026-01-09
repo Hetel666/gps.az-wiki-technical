@@ -1,0 +1,1069 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>GPS.AZ • База знаний (мини-сайт)</title>
+  <style>
+    :root{
+      --bg:#0b1220; --muted:#93a4c7; --text:#eaf0ff;
+      --accent:#6aa9ff; --accent2:#8bffcc; --border:#1f2b4b;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius:16px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Liberation Sans", sans-serif;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:var(--sans); background:linear-gradient(180deg, #070b14, var(--bg)); color:var(--text);}
+
+    header{
+      position:sticky; top:0; z-index:10;
+      background:rgba(7,11,20,.85); backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--border);
+    }
+    .wrap{max-width:1180px; margin:0 auto; padding:18px 16px;}
+    .top{display:flex; gap:14px; align-items:center; justify-content:space-between; flex-wrap:wrap;}
+    h1{font-size:18px; margin:0; letter-spacing:.2px}
+    .badge{font-size:12px; padding:6px 10px; border:1px solid var(--border); border-radius:999px; color:var(--muted)}
+    .controls{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+      margin-top:12px;
+    }
+    .tab{
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(16,27,51,.45);
+      color:var(--text);
+      cursor:pointer;
+      user-select:none;
+    }
+    .tab.active{
+      border-color:rgba(106,169,255,.95);
+      background:rgba(106,169,255,.14);
+    }
+
+    .search{
+      display:flex; align-items:center; gap:8px;
+      padding:10px 12px; border:1px solid var(--border); border-radius:999px;
+      background:rgba(16,27,51,.55);
+      min-width:260px;
+    }
+    .search input{all:unset; width:100%; color:var(--text);}
+
+    select, button{
+      font-family:var(--sans);
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(16,27,51,.55);
+      color:var(--text);
+      padding:10px 12px;
+      cursor:pointer;
+    }
+    button:hover, select:hover{border-color:#2b3b64}
+    button.primary{border-color:rgba(106,169,255,.55)}
+    button.primary:hover{border-color:rgba(106,169,255,.95)}
+    button.ok{border-color:rgba(139,255,204,.55)}
+    button.ok:hover{border-color:rgba(139,255,204,.95)}
+
+    main .wrap{padding-top:12px; padding-bottom:40px;}
+
+    .grid{display:grid; grid-template-columns: repeat(12, 1fr); gap:14px;}
+    .card{
+      grid-column: span 12;
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(106,169,255,.18), transparent 60%),
+                  rgba(16,27,51,.68);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card-header{
+      padding:14px 14px 10px 14px;
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;
+      border-bottom:1px solid rgba(31,43,75,.65);
+    }
+    .title{display:flex; gap:10px; align-items:center; flex-wrap:wrap;}
+    .num{
+      width:28px; height:28px; border-radius:10px;
+      display:grid; place-items:center;
+      background:rgba(106,169,255,.15);
+      border:1px solid rgba(106,169,255,.35);
+      color:var(--accent);
+      font-weight:700;
+      font-size:12px;
+      flex: 0 0 auto;
+    }
+    .card h2{margin:0; font-size:15px;}
+    .desc{margin:4px 0 0 0; color:var(--muted); font-size:13px; line-height:1.35}
+    .actions{display:flex; gap:8px; flex-wrap:wrap}
+    .content{padding:12px 14px 14px 14px;}
+
+    pre{
+      margin:0;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(31,43,75,.75);
+      background:rgba(7,11,20,.55);
+      color:#eaf0ff;
+      font-family:var(--mono);
+      font-size:12.5px;
+      line-height:1.35;
+      overflow:auto;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .meta{
+      margin-top:10px;
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      color:var(--muted); font-size:12px;
+    }
+    .pill{
+      border:1px solid rgba(31,43,75,.85);
+      padding:6px 10px; border-radius:999px;
+      background:rgba(7,11,20,.35);
+    }
+
+    .toast{
+      position:fixed; right:16px; bottom:16px;
+      background:rgba(16,27,51,.92);
+      border:1px solid var(--border);
+      box-shadow: var(--shadow);
+      border-radius: 14px;
+      padding:10px 12px;
+      color:var(--text);
+      font-size:13px;
+      opacity:0; transform:translateY(10px);
+      transition: .2s ease;
+      pointer-events:none;
+      max-width:min(520px, calc(100vw - 32px));
+    }
+    .toast.show{opacity:1; transform:translateY(0)}
+
+    footer{color:var(--muted); font-size:12px; padding:18px 16px 28px;}
+    .hint{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+
+    /* Sections */
+    .section{display:none;}
+    .section.active{display:block;}
+
+    @media (min-width: 900px){
+      .card.cmd{grid-column: span 6;}
+      h1{font-size:20px;}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="top">
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <h1>GPS.AZ • База знаний • <span id="headerContext">Команды</span></h1>
+        <span class="badge" id="langBadge">RU</span>
+        <span class="badge">офлайн HTML</span>
+      </div>
+
+      <div class="controls">
+        <select id="lang">
+          <option value="ru">Русский</option>
+          <option value="az">Azərbaycanca</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="commands" id="tabCommands">Команды</div>
+      <div class="tab" data-tab="ip" id="tabIp">IP</div>
+      <div class="tab" data-tab="ports" id="tabPorts">Порты</div>
+    </div>
+
+    <!-- Controls for Commands tab -->
+    <div class="top" style="margin-top:12px;" id="commandsControls">
+      <div class="controls">
+        <select id="model"></select>
+        <div class="search" title="Поиск по названию/описанию/команде">
+          🔎 <input id="search" type="text" placeholder="Поиск: tow, apn, bluetooth, ..." />
+        </div>
+        <button class="primary" id="copyAllCmds">Копировать все команды</button>
+        <button class="ok" id="copyAllSms">Копировать все (SMS)</button>
+      </div>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <span class="badge">Модель: <b id="modelName"></b></span>
+      </div>
+    </div>
+
+    <!-- Controls for IP tab -->
+    <div class="top" style="margin-top:12px; display:none;" id="ipControls">
+      <div class="controls">
+        <button class="primary" id="copyAllIp">Копировать всю таблицу</button>
+      </div>
+    </div>
+
+    <!-- Controls for Ports tab -->
+    <div class="top" style="margin-top:12px; display:none;" id="portsControls">
+      <div class="controls">
+        <button class="primary" id="copyAllPorts">Копировать всю таблицу</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <!-- COMMANDS SECTION -->
+    <section class="section active" id="sectionCommands">
+      <div class="grid" id="cards"></div>
+      <footer>
+        <div class="pill hint" id="cmdHint">
+          <span>Подсказка:</span>
+          <span>кнопка <b>“Скопировать SMS”</b> копирует <i>Описание + Команда</i> для отправки.</span>
+        </div>
+      </footer>
+    </section>
+
+    <!-- IP SECTION -->
+    <section class="section" id="sectionIp">
+      <section class="card" id="ipCard">
+        <div class="card-header">
+          <div class="title">
+            <div class="num">IP</div>
+            <div>
+              <h2 id="ipTitle">IP серверов и операторов</h2>
+              <p class="desc" id="ipDesc">Выбери строку и скопируй нужный IP (или всю строку).</p>
+            </div>
+          </div>
+          <div class="actions">
+            <span class="badge" id="ipBadge">Azercell / Azerfon / Roaming</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div style="overflow:auto;">
+            <table id="ipTable" style="width:100%; border-collapse:separate; border-spacing:0 10px;"></table>
+          </div>
+          <div class="meta">
+            <span class="pill" id="ipHint">Подсказка: можно копировать отдельно Azercell/Azerfon/Roaming.</span>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- PORTS SECTION -->
+    <section class="section" id="sectionPorts">
+      <section class="card" id="portsCard">
+        <div class="card-header">
+          <div class="title">
+            <div class="num">PT</div>
+            <div>
+              <h2 id="portsTitle">Порты</h2>
+              <p class="desc" id="portsDesc">Копируй порт по серверу/модели или всю строку.</p>
+            </div>
+          </div>
+          <div class="actions">
+            <span class="badge" id="portsBadge">local/hosting • pro • geo • baku • wm • izle</span>
+          </div>
+        </div>
+
+        <div class="content">
+          <div style="overflow:auto;">
+            <table id="portsTable" style="width:100%; border-collapse:separate; border-spacing:0 10px;"></table>
+          </div>
+          <div class="meta">
+            <span class="pill" id="portsHint">Подсказка: можно копировать отдельно local/hosting, pro, geo, baku, wm, izle.</span>
+          </div>
+        </div>
+      </section>
+    </section>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ===================== DATA: Commands by model =====================
+  const DB = {
+    "GV50CME": [
+      { id: 1, key:"apn_server",
+        ru:{title:"Настройка сервера и APN", desc:"Настройка IP, порта и APN для передачи данных"},
+        az:{title:"Server və APN sazlanması", desc:"Məlumat ötürülməsi üçün IP, port və APN sazlanması"},
+        cmd:"AT+GTQSS=gv50cme,m2m,,,3,,1,172.16.35.154,21707,,0,,0,0,0,1,0.0.0.0,0.0.0.0,FFFF$",
+        tags:["apn","server","gtqss"]
+      },
+      { id: 2, key:"global_cfg",
+        ru:{title:"Глобальная настройка", desc:"ICCID, позиция, sleep mode, mileage = 666"},
+        az:{title:"Qlobal sazlama", desc:"ICCID, mövqe, sleep mode, mileage = 666"},
+        cmd:"AT+GTCFG=gv50cme,gv50cme,GV50CME,1,666.0,,,7F,0,0,3BDFF,0,1,1,3600,22,1,0,0,1F,0,4,,0,FFFF$",
+        tags:["global","gtcfg","sleep","mileage"]
+      },
+      { id: 3, key:"fri_normal",
+        ru:{title:"Передача данных (обычный режим)", desc:"Стандартная периодическая передача данных"},
+        az:{title:"Məlumat ötürülməsi (normal rejim)", desc:"Standart periodik məlumat ötürülməsi"},
+        cmd:"AT+GTFRI=gv50cme,5,0,,1,0000,0000,0,5,50,50,,5,120,00000000,0,,0,FFFF$",
+        tags:["gtfri","normal"]
+      },
+      { id: 4, key:"fri_bt",
+        ru:{title:"Передача данных (Bluetooth аксессуар)", desc:"Режим передачи данных с Bluetooth аксессуаром"},
+        az:{title:"Məlumat ötürülməsi (Bluetooth aksesuar)", desc:"Bluetooth aksesuar ilə məlumat ötürülməsi rejimi"},
+        cmd:"AT+GTFRI=gv50cme,5,0,,1,0000,0000,0,5,50,50,,5,120,00000100,0,,0,FFFF$",
+        tags:["gtfri","bluetooth"]
+      },
+      { id: 5, key:"tow",
+        ru:{title:"Эвакуация (TOW)", desc:"Обнаружение эвакуации автомобиля"},
+        az:{title:"Evakuasiya (TOW)", desc:"Avtomobilin evakuasiyasının aşkar edilməsi"},
+        cmd:"AT+GTTOW=gv50cme,1,10,1,300,0,0,0,0,2,3,2,600,,,,,,,,FFFF$",
+        tags:["tow","gttow"]
+      },
+      { id: 6, key:"crash",
+        ru:{title:"Авария (Crash)", desc:"Настройка детектора аварии"},
+        az:{title:"Qəza (Crash)", desc:"Qəza detektorunun sazlanması"},
+        cmd:"AT+GTCRA=gv50cme,2,35,45,60,0,300,300,0,0,0,0,,FFFF$",
+        tags:["crash","gtcra"]
+      },
+      { id: 7, key:"power_voltage",
+        ru:{title:"Показания общего питания (В)", desc:"Настройка мониторинга питания/напряжения"},
+        az:{title:"Ümumi qidalanma gərginliyi (V)", desc:"Qidalanma/gərginlik monitorinqinin sazlanması"},
+        cmd:"AT+GTEPS=gv50cme,1,0,90000,1,1,0,0,0,0,1,0,0,5,FFFF$",
+        tags:["power","voltage","gteps"]
+      },
+      { id: 8, key:"lock_plus",
+        ru:{title:"Настройка для «+ замок»", desc:"Параметры для работы с замком"},
+        az:{title:"“+ Kilid” üçün sazlama", desc:"Kilid ilə iş üçün parametrlər"},
+        cmd:"AT+GTVVS=gv50cme,13500,600,10,1,10,FFFF$",
+        tags:["lock","gtvvs"]
+      },
+      { id: 9, key:"virtual_ignition",
+        ru:{title:"Виртуальное зажигание", desc:"Настройка виртуального ignition"},
+        az:{title:"Virtual alovlanma (ignition)", desc:"Virtual ignition sazlaması"},
+        cmd:"AT+GTVMS=gv50cme,7,03,03,1,0,0,FFFF$",
+        tags:["ignition","virtual","gtvms"]
+      },
+      { id:10, key:"bt_enable",
+        ru:{title:"Bluetooth активизировать", desc:"Включение и базовая настройка Bluetooth"},
+        az:{title:"Bluetooth aktivləşdirmə", desc:"Bluetooth-un aktiv edilməsi və əsas sazlama"},
+        cmd:"AT+GTBTS=gv50cme,1,,GV50CME%IMEI,,3,0,0D03,0003,0,123456,,,,,,,,,,,,FFFF$",
+        tags:["bluetooth","gtbts"]
+      },
+      { id:11, key:"bt_dout",
+        ru:{title:"Bluetooth DOUT активация", desc:"Первая цифра после пароля меняет последовательность/количество сенсоров"},
+        az:{title:"Bluetooth DOUT aktivləşdirmə", desc:"Paroldan sonrakı ilk rəqəm sensorların ardıcıllığını/sayını dəyişir"},
+        cmd:"AT+GTBAS=gv50cme,0,1,0,,FFFFFFFFFFFF,FFFF,30,2400,,,0,0,0,0,,,FFFF$",
+        tags:["bluetooth","dout","gtbas"]
+      },
+      { id:12, key:"bt_temp",
+        ru:{title:"Bluetooth датчик температуры", desc:"Настройка Bluetooth температурного сенсора"},
+        az:{title:"Bluetooth temperatur sensoru", desc:"Bluetooth temperatur sensorunun sazlanması"},
+        cmd:"AT+GTBAS=gv50cme,0,6,5,,FFFFFFFFFFFF,FFFF,30,2400,,0,0,10,2,300,0,20,30,2,300,,0,0,0,0,,,FFFF$",
+        tags:["bluetooth","temperature","gtbas"]
+      },
+      { id:13, key:"reboot",
+        ru:{title:"Перезагрузка", desc:"Перезагрузка устройства"},
+        az:{title:"Yenidən başlatma", desc:"Cihazın yenidən başladılması"},
+        cmd:"AT+GTRTO=gv50cme,3,,,,,,FFFF$",
+        tags:["reboot","gtrto"]
+      },
+      { id:14, key:"clear_logs",
+        ru:{title:"Стирание логов", desc:"Очистка логов устройства"},
+        az:{title:"Logların silinməsi", desc:"Cihaz loglarının təmizlənməsi"},
+        cmd:"AT+GTRTO=gv50cme,31,,0,,,,FFFF$",
+        tags:["logs","clear","gtrto"]
+      },
+      { id:15, key:"factory",
+        ru:{title:"Заводские настройки", desc:"Сброс к заводским настройкам"},
+        az:{title:"Zavod ayarları", desc:"Zavod parametrlərinə qaytarma"},
+        cmd:"AT+GTRTO=gv50cme,4,,,,,,FFFF$",
+        tags:["factory","reset","gtrto"]
+      }
+    ],
+
+    "GV56": [
+      { id: 1, key:"apn",
+        ru:{title:"Настройка APN", desc:"Установка APN для передачи данных"},
+        az:{title:"APN sazlanması", desc:"Məlumat ötürülməsi üçün APN qurulması"},
+        cmd:"AT+GTBSI=gv56,m2m,,,,,,,FFFF$",
+        tags:["apn","gtbsi"]
+      },
+      { id: 2, key:"server",
+        ru:{title:"Настройка сервера", desc:"IP и порт сервера для подключения"},
+        az:{title:"Server sazlanması", desc:"Qoşulma üçün server IP və port"},
+        cmd:"AT+GTSRI=gv56,3,,1,172.16.35.154,21707,,0,,0,0,0,1,,30,0.0.0.0,0.0.0.0,FFFF$",
+        tags:["server","gtsri","ip","port"]
+      },
+      { id: 3, key:"global_cfg",
+        ru:{title:"Глобальная настройка", desc:"ICCID, позиция, sleep mode, mileage = 666666"},
+        az:{title:"Qlobal sazlama", desc:"ICCID, mövqe, sleep mode, mileage = 666666"},
+        cmd:"AT+GTCFG=gv56,gv56,gv56,1,666666.0,,,3F,0,00,3DEF,0,1,1,1800,3,1,0,0,001F,0,FFFF$",
+        tags:["global","gtcfg","sleep","mileage"]
+      },
+      { id: 4, key:"fri_normal",
+        ru:{title:"Передача данных (обычный режим)", desc:"Стандартная периодическая передача данных"},
+        az:{title:"Məlumat ötürülməsi (normal rejim)", desc:"Standart periodik məlumat ötürülməsi"},
+        cmd:"AT+GTFRI=gv56,5,0,,1,0000,0000,0,5,50,50,,5,120,00000000,0,,1,FFFF$",
+        tags:["gtfri","normal"]
+      },
+      { id: 5, key:"fri_bt",
+        ru:{title:"Передача данных (Bluetooth аксессуар)", desc:"Режим передачи данных с Bluetooth аксессуаром"},
+        az:{title:"Məlumat ötürülməsi (Bluetooth aksesuar)", desc:"Bluetooth aksesuar ilə məlumat ötürülməsi rejimi"},
+        cmd:"AT+GTFRI=gv56,5,0,,1,0000,0000,0,5,50,50,,5,120,00000100,0,,1,FFFF$",
+        tags:["gtfri","bluetooth"]
+      },
+      { id: 6, key:"tow",
+        ru:{title:"Эвакуация (TOW)", desc:"Обнаружение эвакуации автомобиля"},
+        az:{title:"Evakuasiya (TOW)", desc:"Avtomobilin evakuasiyasının aşkar edilməsi"},
+        cmd:"AT+GTTOW=gv56,1,10,1,300,0,0,0,0,2,3,2,,,,,,,,,FFFF$",
+        tags:["tow","gttow"]
+      },
+      { id: 7, key:"crash",
+        ru:{title:"Авария (Crash)", desc:"Настройка детектора аварии"},
+        az:{title:"Qəza (Crash)", desc:"Qəza detektorunun sazlanması"},
+        cmd:"AT+GTCRA=gv56,2,35,45,60,0,300,300,0,0,0,0,,FFFF$",
+        tags:["crash","gtcra"]
+      },
+      { id: 8, key:"power_voltage",
+        ru:{title:"Показания общего питания (В)", desc:"Настройка мониторинга питания/напряжения"},
+        az:{title:"Ümumi qidalanma gərginliyi (V)", desc:"Qidalanma/gərginlik monitorinqinin sazlanması"},
+        cmd:"AT+GTEPS=gv56,2,250,28000,1,1,0,0,0,0,1,0,0,5,FFFF$",
+        tags:["power","voltage","gteps"]
+      },
+      { id: 9, key:"lock_plus",
+        ru:{title:"Настройка для «+ замок»", desc:"Параметры для работы с замком"},
+        az:{title:"“+ Kilid” üçün sazlama", desc:"Kilid ilə iş üçün parametrlər"},
+        cmd:"AT+GTVVS=gv56,13500,600,10,1,10,FFFF$",
+        tags:["lock","gtvvs"]
+      },
+      { id:10, key:"virtual_ignition",
+        ru:{title:"Виртуальное зажигание", desc:"Настройка виртуального ignition"},
+        az:{title:"Virtual alovlanma (ignition)", desc:"Virtual ignition sazlaması"},
+        cmd:"AT+GTVMS=gv56,7,3,3,1,,FFFF$",
+        tags:["ignition","virtual","gtvms"]
+      },
+      { id:11, key:"bt_enable",
+        ru:{title:"Bluetooth активизировать", desc:"Включение и базовая настройка Bluetooth"},
+        az:{title:"Bluetooth aktivləşdirmə", desc:"Bluetooth-un aktiv edilməsi və əsas sazlama"},
+        cmd:"AT+GTBTS=gv56,1,,GV56_BT,04,,,1903,0003,,,,,,,,,,,,,,FFFF$",
+        tags:["bluetooth","gtbts"]
+      },
+      { id:12, key:"bt_dout",
+        ru:{title:"Bluetooth DOUT активация", desc:"Первая цифра после пароля меняет последовательность/количество сенсоров"},
+        az:{title:"Bluetooth DOUT aktivləşdirmə", desc:"Paroldan sonrakı ilk rəqəm sensorların ardıcıllığını/sayını dəyişir"},
+        cmd:"AT+GTBAS=gv56,0,1,0,,FFFFFFFFFFFF,003F,30,2400,,,,,,,,0,0,0,0,,,FFFF$",
+        tags:["bluetooth","dout","gtbas"]
+      },
+      { id:13, key:"bt_temp",
+        ru:{title:"Bluetooth датчик температуры", desc:"Настройка Bluetooth температурного сенсора"},
+        az:{title:"Bluetooth temperatur sensoru", desc:"Bluetooth temperatur sensorunun sazlanması"},
+        cmd:"AT+GTBAS=gv56,0,6,5,,FFFFFFFFFFFF,3F,30,2400,,0,0,10,2,300,0,20,30,2,300,,0,0,0,0,,,FFFF$",
+        tags:["bluetooth","temperature","gtbas"]
+      },
+      { id:14, key:"reboot",
+        ru:{title:"Перезагрузка", desc:"Перезагрузка устройства"},
+        az:{title:"Yenidən başlatma", desc:"Cihazın yenidən başladılması"},
+        cmd:"AT+GTRTO=gv56,3,,,,,,FFFF$",
+        tags:["reboot","gtrto"]
+      },
+      { id:15, key:"clear_logs",
+        ru:{title:"Стирание логов", desc:"Очистка логов устройства"},
+        az:{title:"Logların silinməsi", desc:"Cihaz loglarının təmizlənməsi"},
+        cmd:"AT+GTRTO=gv56,30,,0,,,,FFFF$",
+        tags:["logs","clear","gtrto"]
+      },
+      { id:16, key:"factory",
+        ru:{title:"Заводские настройки", desc:"Сброс к заводским настройкам"},
+        az:{title:"Zavod ayarları", desc:"Zavod parametrlərinə qaytarma"},
+        cmd:"AT+GTRTO=gv56,4,,,,,,FFFF$",
+        tags:["factory","reset","gtrto"]
+      }
+    ],
+
+    "GV58CEU": [
+      { id: 1, key:"apn_server",
+        ru:{title:"Настройка APN + сервера", desc:"Настройка APN и параметров сервера для передачи данных"},
+        az:{title:"APN + server sazlanması", desc:"Məlumat ötürülməsi üçün APN və server parametrlərinin sazlanması"},
+        cmd:"AT+GTQSS=1inciyik,m2m,,,3,,1,172.16.35.154,22442,,0,,0,0,0,1,0.0.0.0,0.0.0.0,FFFF$",
+        tags:["apn","server","gtqss"]
+      },
+      { id: 2, key:"global_cfg",
+        ru:{title:"Глобальная настройка", desc:"ICCID, позиция, sleep mode, mileage = 666"},
+        az:{title:"Qlobal sazlama", desc:"ICCID, mövqe, sleep mode, mileage = 666"},
+        cmd:"AT+GTCFG=1inciyik,1inciyik,GV58CEU,1,666.0,,,3F,0,1,1BDEF,0,1,1,3600,22,1,0,0,1F,0,4,FFFF$",
+        tags:["global","gtcfg","sleep","mileage"]
+      },
+      { id: 3, key:"fri_normal",
+        ru:{title:"Передача данных (обычный режим)", desc:"Стандартная периодическая передача данных"},
+        az:{title:"Məlumat ötürülməsi (normal rejim)", desc:"Standart periodik məlumat ötürülməsi"},
+        cmd:"AT+GTFRI=1inciyik,5,0,,1,0000,0000,0,5,50,50,,5,120,0,0,,1,FFFF$",
+        tags:["gtfri","normal"]
+      },
+      { id: 4, key:"fri_bt",
+        ru:{title:"Передача данных (Bluetooth аксессуар)", desc:"Режим передачи данных с Bluetooth аксессуаром"},
+        az:{title:"Məlumat ötürülməsi (Bluetooth aksesuar)", desc:"Bluetooth aksesuar ilə məlumat ötürülməsi rejimi"},
+        cmd:"AT+GTFRI=1inciyik,5,0,,1,0000,0000,0,5,50,50,,5,120,100,0,,1,FFFF$",
+        tags:["gtfri","bluetooth"]
+      },
+      { id: 5, key:"tow",
+        ru:{title:"Эвакуация (TOW)", desc:"Обнаружение эвакуации автомобиля"},
+        az:{title:"Evakuasiya (TOW)", desc:"Avtomobilin evakuasiyasının aşkar edilməsi"},
+        cmd:"AT+GTTOW=1inciyik,1,10,1,300,0,0,0,0,2,3,2,600,,,,,,,,FFFF$",
+        tags:["tow","gttow"]
+      },
+      { id: 6, key:"crash",
+        ru:{title:"Авария (Crash)", desc:"Настройка детектора аварии"},
+        az:{title:"Qəza (Crash)", desc:"Qəza detektorunun sazlanması"},
+        cmd:"AT+GTCRA=1inciyik,2,35,15,50,0,300,300,0,0,0,0,,FFFF$",
+        tags:["crash","gtcra"]
+      },
+      { id: 7, key:"power_voltage",
+        ru:{title:"Показания общего питания (В)", desc:"Настройка мониторинга питания/напряжения"},
+        az:{title:"Ümumi qidalanma gərginliyi (V)", desc:"Qidalanma/gərginlik monitorinqinin sazlanması"},
+        cmd:"AT+GTEPS=1inciyik,1,250,32000,1,1,0,0,0,0,1,0,0,5,FFFF$",
+        tags:["power","voltage","gteps"]
+      },
+      { id: 8, key:"lock_plus",
+        ru:{title:"Настройка для «+ замок»", desc:"Параметры для работы с замком"},
+        az:{title:"“+ Kilid” üçün sazlama", desc:"Kilid ilə iş üçün parametrlər"},
+        cmd:"AT+GTVVS=1inciyik,13500,600,10,1,10,FFFF$",
+        tags:["lock","gtvvs"]
+      },
+      { id: 9, key:"virtual_ignition",
+        ru:{title:"Виртуальное зажигание", desc:"Настройка виртуального ignition"},
+        az:{title:"Virtual alovlanma (ignition)", desc:"Virtual ignition sazlaması"},
+        cmd:"AT+GTVMS=1inciyik,7,03,03,1,,FFFF$",
+        tags:["ignition","virtual","gtvms"]
+      },
+      { id:10, key:"bt_enable",
+        ru:{title:"Bluetooth активизировать", desc:"Включение и базовая настройка Bluetooth"},
+        az:{title:"Bluetooth aktivləşdirmə", desc:"Bluetooth-un aktiv edilməsi və əsas sazlama"},
+        cmd:"AT+GTBTS=1inciyik,1,,GV58CEU%IMEI,,3,0,0D03,0003,0,123456,,,,,,,,,0,400,240,FFFF$",
+        tags:["bluetooth","gtbts"]
+      },
+      { id:11, key:"bt_dout",
+        ru:{title:"Bluetooth DOUT активация", desc:"Первая цифра после пароля меняет последовательность/количество сенсоров"},
+        az:{title:"Bluetooth DOUT aktivləşdirmə", desc:"Paroldan sonrakı ilk rəqəm sensorların ardıcıllığını/sayını dəyişir"},
+        cmd:"AT+GTBAS=1inciyik,0,1,0,,FFFFFFFFFFFF,003F,30,2400,,,0,0,0,0,,,FFFF$",
+        tags:["bluetooth","dout","gtbas"]
+      },
+      { id:12, key:"bt_temp",
+        ru:{title:"Bluetooth датчик температуры", desc:"Настройка Bluetooth температурного сенсора"},
+        az:{title:"Bluetooth temperatur sensoru", desc:"Bluetooth temperatur sensorunun sazlanması"},
+        cmd:"AT+GTBAS=1inciyik,0,6,5,,FFFFFFFFFFFF,003F,30,2400,,0,0,10,2,300,0,20,30,2,300,,0,0,0,0,,,FFFF$",
+        tags:["bluetooth","temperature","gtbas"]
+      },
+      { id:13, key:"reboot",
+        ru:{title:"Перезагрузка", desc:"Перезагрузка устройства"},
+        az:{title:"Yenidən başlatma", desc:"Cihazın yenidən başladılması"},
+        cmd:"AT+GTRTO=1inciyik,3,,,,,,FFFF$",
+        tags:["reboot","gtrto"]
+      },
+      { id:14, key:"clear_logs",
+        ru:{title:"Стирание логов", desc:"Очистка логов устройства"},
+        az:{title:"Logların silinməsi", desc:"Cihaz loglarının təmizlənməsi"},
+        cmd:"AT+GTRTO=1inciyik,31,,0,,,,FFFF$",
+        tags:["logs","clear","gtrto"]
+      },
+      { id:15, key:"factory",
+        ru:{title:"Заводские настройки", desc:"Сброс к заводским настройкам"},
+        az:{title:"Zavod ayarları", desc:"Zavod parametrlərinə qaytarma"},
+        cmd:"AT+GTRTO=1inciyik,4,,,,,,FFFF$",
+        tags:["factory","reset","gtrto"]
+      }
+    ]
+  };
+
+  // ===================== DATA: IP table =====================
+  const IP_TABLE = [
+    { server: "pro",     azercell: "172.16.35.146", azerfon: "10.132.16.123", roaming: "85.132.53.154" },
+    { server: "local",   azercell: "172.16.35.154", azerfon: "10.132.16.121", roaming: "85.132.99.26" },
+    { server: "hosting", azercell: "172.16.35.150", azerfon: "10.132.16.124", roaming: "185.213.1.24" },
+    { server: "wm",      azercell: "172.16.35.153", azerfon: "10.132.16.125", roaming: "85.132.99.30" },
+    { server: "geo",     azercell: "172.16.41.10",  azerfon: "10.132.16.126", roaming: "85.132.53.156" },
+    { server: "wmUz",    azercell: "176.221.28.140", azerfon: "176.221.28.140", roaming: "176.221.28.140" },
+    { server: "Baku",    azercell: "172.16.41.15",  azerfon: "172.16.41.15",  roaming: "85.132.99.29" },
+    { server: "wmUznew", azercell: "85.132.53.155", azerfon: "85.132.53.155", roaming: "85.132.53.155" },
+    { server: "izle",    azercell: "172.16.41.22",  azerfon: "77.223.106.70", roaming: "77.223.106.70" },
+    { server: "IPS",     azercell: "172.16.41.8",   azerfon: "172.16.41.8",   roaming: "85.132.91.226" }
+  ];
+
+  // ===================== DATA: Ports table =====================
+  const PORTS_TABLE = [
+    { model:"queclink gv56",     local_hosting:"21707", pro:"IPS",          geo:"6004", baku:"16130", wm:"11624", izle:"16130" },
+    { model:"queclink gv50",     local_hosting:"22607", pro:"IPS",          geo:"6004", baku:"16150", wm:"11639", izle:"16150" },
+    { model:"queclink gv58ceu",  local_hosting:"22442", pro:"IPS",          geo:"6004", baku:"17775", wm:"11637", izle:"17775" },
+    { model:"teltonika fmb920",  local_hosting:"21328", pro:"FMB900 21327", geo:"6027", baku:"16040", wm:"11922", izle:"16040" },
+    { model:"teltonika fmc130",  local_hosting:"21860", pro:"FMB900 21327", geo:"6027", baku:"16040", wm:"11922", izle:"16040" },
+    { model:"teltonika fmc150",  local_hosting:"22371", pro:"FMB900 21327", geo:"6027", baku:"16040", wm:"11922", izle:"16040" },
+    { model:"teltonika fmb140",  local_hosting:"21921", pro:"FMB900 21327", geo:"6027", baku:"16040", wm:"11922", izle:"16040" },
+    { model:"fmy",               local_hosting:"20281", pro:"20281",        geo:"6023", baku:"20620", wm:"10202", izle:"20620" },
+    { model:"gv56 ips",          local_hosting:"1602",  pro:"1612",         geo:"",     baku:"1622",  wm:"",      izle:"1622" },
+    { model:"gv50 ips",          local_hosting:"1603",  pro:"1613",         geo:"",     baku:"1623",  wm:"",      izle:"1623" },
+    { model:"gv58 ips",          local_hosting:"1601",  pro:"1611",         geo:"",     baku:"1621",  wm:"",      izle:"1621" }
+  ];
+
+  // ===================== STATE =====================
+  let LANG = "ru";
+  let MODEL = Object.keys(DB)[0];
+  let ACTIVE_TAB = "commands";
+
+  // ===================== ELEMENTS =====================
+  const elCards = document.getElementById("cards");
+  const elLang = document.getElementById("lang");
+  const elBadge = document.getElementById("langBadge");
+  const elSearch = document.getElementById("search");
+  const elModel = document.getElementById("model");
+  const elModelName = document.getElementById("modelName");
+
+  const elHeaderContext = document.getElementById("headerContext");
+
+  const elCommandsControls = document.getElementById("commandsControls");
+  const elIpControls = document.getElementById("ipControls");
+  const elPortsControls = document.getElementById("portsControls");
+
+  const elSectionCommands = document.getElementById("sectionCommands");
+  const elSectionIp = document.getElementById("sectionIp");
+  const elSectionPorts = document.getElementById("sectionPorts");
+
+  // ===================== HELPERS =====================
+  function toast(msg){
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(()=>t.classList.remove("show"), 1600);
+  }
+
+  async function copyText(text){
+    try{
+      await navigator.clipboard.writeText(text);
+      toast(LANG==="ru" ? "Скопировано ✅" : "Kopyalandı ✅");
+    }catch(e){
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      ta.remove();
+      toast(LANG==="ru" ? "Скопировано ✅" : "Kopyalandı ✅");
+    }
+  }
+
+  function escapeHtml(str){
+    return (str||"")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;");
+  }
+
+  function norm(s){ return (s||"").toLowerCase(); }
+  function tCmd(item){ return item[LANG]; }
+
+  function smsBlock(item){
+    const tt = tCmd(item);
+    return `${MODEL} • ${tt.title}: ${tt.desc}\n${item.cmd}`;
+  }
+
+  // ===================== TEXTS (UI) =====================
+  function uiTexts(){
+    if(LANG === "ru"){
+      return {
+        tabs: { commands:"Команды", ip:"IP", ports:"Порты" },
+        header: { commands:"Команды", ip:"IP", ports:"Порты" },
+        searchPh: "Поиск: tow, apn, bluetooth, ...",
+        copyAllCmds: "Копировать все команды",
+        copyAllSms: "Копировать все (SMS)",
+        copyCmd: "Копировать команду",
+        copySms: "Скопировать SMS",
+        modelLabel: "Модель",
+        cmdHint: "Подсказка: кнопка “Скопировать SMS” копирует Описание + Команда для отправки.",
+        ip: {
+          title: "IP серверов и операторов",
+          desc: "Выбери строку и скопируй нужный IP (или всю строку).",
+          hint: "Подсказка: можно копировать отдельно Azercell/Azerfon/Roaming.",
+          copyAll: "Копировать всю таблицу",
+          thServer:"Server", thAzercell:"Azercell", thAzerfon:"Azerfon", thRoaming:"Roaming",
+          copyIp:"Копировать IP", copyRow:"Копировать строку"
+        },
+        ports: {
+          title: "Порты",
+          desc: "Копируй порт по серверу/модели или всю строку.",
+          hint: "Подсказка: можно копировать отдельно local/hosting, pro, geo, baku, wm, izle.",
+          copyAll: "Копировать всю таблицу",
+          thModel:"model", thLocal:"local/hosting", thPro:"pro", thGeo:"geo", thBaku:"baku", thWm:"wm", thIzle:"izle",
+          copyCell:"Копировать", copyRow:"Копировать строку"
+        },
+        notFound: { title:"Ничего не найдено", desc:"Измени запрос поиска." }
+      };
+    }
+    return {
+      tabs: { commands:"Komandalar", ip:"IP", ports:"Portlar" },
+      header: { commands:"Komandalar", ip:"IP", ports:"Portlar" },
+      searchPh: "Axtarış: tow, apn, bluetooth, ...",
+      copyAllCmds: "Bütün komandaları kopyala",
+      copyAllSms: "Hamısı (SMS) kopyala",
+      copyCmd: "Komandanı kopyala",
+      copySms: "SMS üçün kopyala",
+      modelLabel: "Model",
+      cmdHint: "İpucu: “SMS üçün kopyala” düyməsi Təsvir + Komanda mətnini kopyalayır.",
+      ip: {
+        title: "Serverlər və operatorlar üçün IP-lər",
+        desc: "Sətiri seç və lazım olan IP-ni (və ya bütün sətri) kopyala.",
+        hint: "İpucu: ayrıca Azercell/Azerfon/Roaming IP-lərini kopyalamaq olar.",
+        copyAll: "Bütün cədvəli kopyala",
+        thServer:"Server", thAzercell:"Azercell", thAzerfon:"Azerfon", thRoaming:"Roaming",
+        copyIp:"IP-ni kopyala", copyRow:"Sətri kopyala"
+      },
+      ports: {
+        title: "Portlar",
+        desc: "Server/model üzrə portu və ya bütün sətri kopyala.",
+        hint: "İpucu: ayrıca local/hosting, pro, geo, baku, wm, izle sütunlarını kopyalamaq olar.",
+        copyAll: "Bütün cədvəli kopyala",
+        thModel:"model", thLocal:"local/hosting", thPro:"pro", thGeo:"geo", thBaku:"baku", thWm:"wm", thIzle:"izle",
+        copyCell:"Kopyala", copyRow:"Sətri kopyala"
+      },
+      notFound: { title:"Heç nə tapılmadı", desc:"Axtarış sorğusunu dəyişin." }
+    };
+  }
+
+  // ===================== RENDER: Tabs =====================
+  function setTab(tab){
+    ACTIVE_TAB = tab;
+
+    // tabs UI
+    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+    document.querySelector(`.tab[data-tab="${tab}"]`)?.classList.add("active");
+
+    // sections
+    elSectionCommands.classList.toggle("active", tab==="commands");
+    elSectionIp.classList.toggle("active", tab==="ip");
+    elSectionPorts.classList.toggle("active", tab==="ports");
+
+    // controls
+    elCommandsControls.style.display = (tab==="commands") ? "" : "none";
+    elIpControls.style.display = (tab==="ip") ? "" : "none";
+    elPortsControls.style.display = (tab==="ports") ? "" : "none";
+
+    // header context
+    const U = uiTexts();
+    elHeaderContext.textContent = U.header[tab];
+
+    // render content for tab
+    if(tab==="commands") renderCommands();
+    if(tab==="ip") renderIpTable();
+    if(tab==="ports") renderPortsTable();
+  }
+
+  // ===================== RENDER: Commands =====================
+  function fillModels(){
+    elModel.innerHTML = "";
+    Object.keys(DB).forEach(m=>{
+      const opt = document.createElement("option");
+      opt.value = m;
+      opt.textContent = m;
+      elModel.appendChild(opt);
+    });
+    elModel.value = MODEL;
+  }
+
+  function renderCommands(){
+    const U = uiTexts();
+    elBadge.textContent = LANG.toUpperCase();
+    document.documentElement.lang = (LANG==="ru") ? "ru" : "az";
+
+    document.getElementById("tabCommands").textContent = U.tabs.commands;
+    document.getElementById("tabIp").textContent = U.tabs.ip;
+    document.getElementById("tabPorts").textContent = U.tabs.ports;
+
+    elSearch.placeholder = U.searchPh;
+    document.getElementById("copyAllCmds").textContent = U.copyAllCmds;
+    document.getElementById("copyAllSms").textContent = U.copyAllSms;
+    document.getElementById("cmdHint").textContent = U.cmdHint;
+
+    elModelName.textContent = MODEL;
+
+    const q = norm(elSearch.value.trim());
+    const list = DB[MODEL] || [];
+    const filtered = list.filter(item=>{
+      const tt = tCmd(item);
+      const hay = [tt.title, tt.desc, item.cmd, (item.tags||[]).join(" ")].join(" ");
+      return !q || norm(hay).includes(q);
+    });
+
+    elCards.innerHTML = "";
+    filtered.forEach(item=>{
+      const tt = tCmd(item);
+      const card = document.createElement("section");
+      card.className = "card cmd";
+      card.innerHTML = `
+        <div class="card-header">
+          <div class="title">
+            <div class="num">${item.id}</div>
+            <div>
+              <h2>${escapeHtml(tt.title)}</h2>
+              <p class="desc">${escapeHtml(tt.desc)}</p>
+            </div>
+          </div>
+          <div class="actions">
+            <button class="primary" data-act="copy-cmd" data-id="${item.id}">${escapeHtml(U.copyCmd)}</button>
+            <button class="ok" data-act="copy-sms" data-id="${item.id}">${escapeHtml(U.copySms)}</button>
+          </div>
+        </div>
+        <div class="content">
+          <pre>${escapeHtml(item.cmd)}</pre>
+          <div class="meta">
+            ${(item.tags||[]).slice(0,6).map(tag=>`<span class="pill">#${escapeHtml(tag)}</span>`).join("")}
+          </div>
+        </div>
+      `;
+      elCards.appendChild(card);
+    });
+
+    if(filtered.length === 0){
+      const empty = document.createElement("div");
+      empty.className = "card";
+      empty.innerHTML = `
+        <div class="card-header">
+          <div class="title">
+            <div class="num">!</div>
+            <div>
+              <h2>${escapeHtml(U.notFound.title)}</h2>
+              <p class="desc">${escapeHtml(U.notFound.desc)}</p>
+            </div>
+          </div>
+        </div>
+      `;
+      elCards.appendChild(empty);
+    }
+  }
+
+  // ===================== RENDER: IP table =====================
+  function renderIpTable(){
+    const U = uiTexts().ip;
+
+    document.getElementById("ipTitle").textContent = U.title;
+    document.getElementById("ipDesc").textContent = U.desc;
+    document.getElementById("ipHint").textContent = U.hint;
+    document.getElementById("copyAllIp").textContent = U.copyAll;
+
+    const table = document.getElementById("ipTable");
+
+    const th = (text)=>`<th style="text-align:left; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:rgba(7,11,20,.35);">${escapeHtml(text)}</th>`;
+    const tdStyle = ()=>"padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:rgba(16,27,51,.35);";
+    const td = (val, col, idx)=>`
+      <td style="${tdStyle()} font-family:var(--mono);">
+        ${escapeHtml(val)}
+        <div style="margin-top:8px;">
+          <button class="primary" data-act="copy-ip" data-col="${col}" data-idx="${idx}" style="padding:8px 10px;">${escapeHtml(U.copyIp)}</button>
+        </div>
+      </td>
+    `;
+
+    const head = `
+      <tr>
+        ${th(U.thServer)}
+        ${th(U.thAzercell)}
+        ${th(U.thAzerfon)}
+        ${th(U.thRoaming)}
+        ${th(" ")}
+      </tr>
+    `;
+
+    const rows = IP_TABLE.map((r, idx)=>{
+      const line = `Server=${r.server} | Azercell=${r.azercell} | Azerfon=${r.azerfon} | Roaming=${r.roaming}`;
+      return `
+        <tr>
+          <td style="${tdStyle()} font-weight:600;">${escapeHtml(r.server)}</td>
+          ${td(r.azercell,"azercell",idx)}
+          ${td(r.azerfon,"azerfon",idx)}
+          ${td(r.roaming,"roaming",idx)}
+          <td style="${tdStyle()}">
+            <button class="ok" data-act="copy-ip-row" data-idx="${idx}" style="padding:10px 12px; width:100%;">${escapeHtml(U.copyRow)}</button>
+            <div style="margin-top:8px; color:var(--muted); font-size:12px; font-family:var(--mono);">${escapeHtml(line)}</div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    table.innerHTML = head + rows;
+  }
+
+  // ===================== RENDER: Ports table =====================
+  function renderPortsTable(){
+    const U = uiTexts().ports;
+
+    document.getElementById("portsTitle").textContent = U.title;
+    document.getElementById("portsDesc").textContent = U.desc;
+    document.getElementById("portsHint").textContent = U.hint;
+    document.getElementById("copyAllPorts").textContent = U.copyAll;
+
+    const table = document.getElementById("portsTable");
+
+    const th = (text)=>`<th style="text-align:left; padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:rgba(7,11,20,.35);">${escapeHtml(text)}</th>`;
+    const tdStyle = ()=>"padding:10px 12px; border:1px solid var(--border); border-radius:12px; background:rgba(16,27,51,.35);";
+    const tdStrong = (val)=>`<td style="${tdStyle()} font-weight:600;">${escapeHtml(val||"")}</td>`;
+    const tdCell = (val, col, idx)=>{
+      const v = String(val||"").trim();
+      const disabled = v === "";
+      return `
+        <td style="${tdStyle()} font-family:var(--mono);">
+          ${escapeHtml(v || "-")}
+          <div style="margin-top:8px;">
+            <button class="primary" data-act="copy-port" data-col="${col}" data-idx="${idx}"
+              style="padding:8px 10px; ${disabled ? "opacity:.45; pointer-events:none;" : ""}">
+              ${escapeHtml(U.copyCell)}
+            </button>
+          </div>
+        </td>
+      `;
+    };
+
+    const head = `
+      <tr>
+        ${th(U.thModel)}
+        ${th(U.thLocal)}
+        ${th(U.thPro)}
+        ${th(U.thGeo)}
+        ${th(U.thBaku)}
+        ${th(U.thWm)}
+        ${th(U.thIzle)}
+        ${th(" ")}
+      </tr>
+    `;
+
+    const rows = PORTS_TABLE.map((r, idx)=>{
+      const line = `model=${r.model} | local/hosting=${r.local_hosting} | pro=${r.pro} | geo=${r.geo} | baku=${r.baku} | wm=${r.wm} | izle=${r.izle}`;
+      return `
+        <tr>
+          ${tdStrong(r.model)}
+          ${tdCell(r.local_hosting,"local_hosting",idx)}
+          ${tdCell(r.pro,"pro",idx)}
+          ${tdCell(r.geo,"geo",idx)}
+          ${tdCell(r.baku,"baku",idx)}
+          ${tdCell(r.wm,"wm",idx)}
+          ${tdCell(r.izle,"izle",idx)}
+          <td style="${tdStyle()}">
+            <button class="ok" data-act="copy-port-row" data-idx="${idx}" style="padding:10px 12px; width:100%;">${escapeHtml(U.copyRow)}</button>
+            <div style="margin-top:8px; color:var(--muted); font-size:12px; font-family:var(--mono);">${escapeHtml(line)}</div>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    table.innerHTML = head + rows;
+  }
+
+  // ===================== EVENTS =====================
+  elLang.addEventListener("change", (e)=>{
+    LANG = e.target.value;
+    elBadge.textContent = LANG.toUpperCase();
+    // re-render current tab
+    setTab(ACTIVE_TAB);
+  });
+
+  elModel.addEventListener("change", (e)=>{
+    MODEL = e.target.value;
+    elSearch.value = "";
+    renderCommands();
+  });
+
+  elSearch.addEventListener("input", ()=>renderCommands());
+
+  // tabs
+  document.addEventListener("click", (e)=>{
+    const tab = e.target.closest(".tab");
+    if(tab){
+      setTab(tab.getAttribute("data-tab"));
+      return;
+    }
+
+    const btn = e.target.closest("button[data-act]");
+    if(!btn) return;
+
+    const act = btn.getAttribute("data-act");
+
+    // Commands actions
+    if(act === "copy-cmd" || act === "copy-sms"){
+      const id = Number(btn.getAttribute("data-id"));
+      const list = DB[MODEL] || [];
+      const item = list.find(x=>x.id===id);
+      if(!item) return;
+      if(act === "copy-cmd") copyText(item.cmd);
+      if(act === "copy-sms") copyText(smsBlock(item));
+      return;
+    }
+
+    // IP actions
+    if(act === "copy-ip" || act === "copy-ip-row"){
+      const idx = Number(btn.getAttribute("data-idx"));
+      const row = IP_TABLE[idx];
+      if(!row) return;
+
+      if(act === "copy-ip"){
+        const col = btn.getAttribute("data-col");
+        const val = row[col];
+        if(val) copyText(val);
+      }
+      if(act === "copy-ip-row"){
+        const line = `Server=${row.server} | Azercell=${row.azercell} | Azerfon=${row.azerfon} | Roaming=${row.roaming}`;
+        copyText(line);
+      }
+      return;
+    }
+
+    // Ports actions
+    if(act === "copy-port" || act === "copy-port-row"){
+      const idx = Number(btn.getAttribute("data-idx"));
+      const row = PORTS_TABLE[idx];
+      if(!row) return;
+
+      if(act === "copy-port"){
+        const col = btn.getAttribute("data-col");
+        const val = row[col];
+        if(val && String(val).trim() !== "") copyText(String(val).trim());
+      }
+      if(act === "copy-port-row"){
+        const line = `model=${row.model} | local/hosting=${row.local_hosting} | pro=${row.pro} | geo=${row.geo} | baku=${row.baku} | wm=${row.wm} | izle=${row.izle}`;
+        copyText(line);
+      }
+      return;
+    }
+  });
+
+  // top copy buttons
+  document.getElementById("copyAllCmds").addEventListener("click", ()=>{
+    const list = DB[MODEL] || [];
+    copyText(list.map(i=>i.cmd).join("\n\n"));
+  });
+
+  document.getElementById("copyAllSms").addEventListener("click", ()=>{
+    const list = DB[MODEL] || [];
+    copyText(list.map(i=>smsBlock(i)).join("\n\n---\n\n"));
+  });
+
+  document.getElementById("copyAllIp").addEventListener("click", ()=>{
+    const lines = IP_TABLE.map(r =>
+      `Server=${r.server}\tAzercell=${r.azercell}\tAzerfon=${r.azerfon}\tRoaming=${r.roaming}`
+    ).join("\n");
+    copyText(lines);
+  });
+
+  document.getElementById("copyAllPorts").addEventListener("click", ()=>{
+    const lines = PORTS_TABLE.map(r =>
+      `model=${r.model}\tlocal/hosting=${r.local_hosting}\tpro=${r.pro}\tgeo=${r.geo}\tbaku=${r.baku}\twm=${r.wm}\tizle=${r.izle}`
+    ).join("\n");
+    copyText(lines);
+  });
+
+  // ===================== INIT =====================
+  function init(){
+    fillModels();
+    const U = uiTexts();
+    document.getElementById("tabCommands").textContent = U.tabs.commands;
+    document.getElementById("tabIp").textContent = U.tabs.ip;
+    document.getElementById("tabPorts").textContent = U.tabs.ports;
+    elBadge.textContent = LANG.toUpperCase();
+    setTab("commands");
+  }
+  init();
+</script>
+</body>
+</html>
